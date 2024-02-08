@@ -1,0 +1,28 @@
+{
+  "name": "nodeapi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "cross-env NODE_ENV=test mocha --sort Tests/UserTest.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "~1.0.1",
+    "cors": "2.8.1",
+    "express": "~4.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "md5": "^2.3.0",
+    "mssql": "^6.2.1",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.9.1"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "mocha": "^10.2.0",
+    "nodemon": "^2.0.4",
+    "supertest": "^6.3.4"
+  },
+  "keywords": [],
+  "author": "bacem"
+}
