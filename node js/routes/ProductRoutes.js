@@ -6,8 +6,8 @@ const productController = require('../controllers/productController');
 // Route to add a new product (Only Admin)
 router.post('/product/add', verifyToken, verifyAdminRole, async (req, res) => {
     try {
-        const { name, price, image, categoryIds } = req.body;
-        const result = await productController.createProduct(name, price, image, categoryIds);
+        const { name, price, image,description, categoryIds } = req.body;
+        const result = await productController.createProduct(name, price, image, description,categoryIds);
         res.json(result);
     } catch (error) {
         console.error('Error adding product:', error.message);
@@ -31,8 +31,8 @@ router.delete('/product/remove/:productId', verifyToken, verifyAdminRole, async 
 router.put('/product/modify/:productId', verifyToken, verifyAdminRole, async (req, res) => {
     try {
         const { productId } = req.params;
-        const { name, price, image, categoryIds } = req.body;
-        const result = await productController.modifyProduct(productId, name, price, image, categoryIds);
+        const { name, price, image,description, categoryIds } = req.body;
+        const result = await productController.modifyProduct(productId, name, price, image,description, categoryIds);
         res.json(result);
     } catch (error) {
         console.error('Error modifying product:', error.message);
@@ -40,27 +40,63 @@ router.put('/product/modify/:productId', verifyToken, verifyAdminRole, async (re
     }
 });
 
-// Route to find products by name (No authentication required)
-router.get('/product/find-by-name/:partialProductName', async (req, res) => {
+// Route to find products by name with pagination (No authentication required)
+router.get('/product/find-by-name/:partialProductName/:productPerPage/:pageNumber', async (req, res) => {
     try {
-        const { partialProductName } = req.params;
-        const result = await productController.findProductsByName(partialProductName);
+        const { partialProductName, productPerPage = 10, pageNumber = 1 } = req.params;
+
+        const result = await productController.findProductsByNameWithPagination(partialProductName, parseInt(productPerPage), parseInt(pageNumber));
         res.json(result);
     } catch (error) {
-        console.error('Error finding products by name:', error.message);
+        console.error('Error finding products by name with pagination:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Route to find all products (No authentication required)
-router.get('/product/find-all', async (req, res) => {
+
+// Route to find products with pagination (No authentication required)
+    router.get('/product/find-all/:productPerPage/:pageNumber', async (req, res) => {
     try {
-        const result = await productController.findAllProducts();
+        const { productPerPage = 10, pageNumber = 1 } = req.params; // Default productPerPage to 10 products per page and pageNumber 1
+        const result = await productController.getProductsPaginated(parseInt(productPerPage), parseInt(pageNumber));
         res.json(result);
     } catch (error) {
-        console.error('Error finding all products:', error.message);
+        console.error('Error finding products with pagination:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+// Route to find products by category with pagination (No authentication required)
+router.get('/product/find-by-category/:categoryName/:productPerPage/:pageNumber', async (req, res) => {
+    try {
+        const { categoryName, productPerPage = 10, pageNumber = 1 } = req.params; // Default productPerPage to 10 products per page and pageNumber 1
+        const result = await productController.findProductsByCategory(categoryName, parseInt(productPerPage), parseInt(pageNumber));
+        res.json(result);
+    } catch (error) {
+        console.error('Error finding products by category with pagination:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Route to find products by name with pagination and category filtering (No authentication required)
+router.get('/product/find-by-name/:partialProductName/:categoryName/:productPerPage/:pageNumber', async (req, res) => {
+    try {
+        const { partialProductName, categoryName, productPerPage = 10, pageNumber = 1 } = req.params;
+
+        const result = await productController.findProductsByNameWithPaginationAndCategory(
+            partialProductName,
+            parseInt(productPerPage),
+            parseInt(pageNumber),
+            categoryName
+        );
+
+        res.json(result);
+    } catch (error) {
+        console.error('Error finding products by name with pagination and category:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+
 
 module.exports = router;

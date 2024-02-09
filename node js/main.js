@@ -7,6 +7,8 @@ const userRoutes = require('./routes/userRoutes');
 const categoryRoutes = require('./routes/CategoryRoutes');
 const productRoutes = require('./routes/ProductRoutes');
 const cartRoutes = require('./routes/CartRoutes');
+const cors = require('cors');
+
 
 const config = require('./Configs/config');
 
@@ -23,6 +25,8 @@ initializeDatabase()
     });
 const app = express();
 const port = 3002;
+app.use(cors());
+
 
 app.use(bodyParser.json());
 app.use('/api', userRoutes);

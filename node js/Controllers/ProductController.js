@@ -24,27 +24,35 @@ async function deleteProduct(productId) {
         throw error;
     }
 }
+// Function to get products with pagination
+async function getProductsPaginated(limit, page) {
+    try {
+        // Calculate the offset based on the page number and limit
+        const offset = (page - 1) * limit;
 
-// Function to get all products
-async function getAllProducts() {
-    // Retrieve all products from the database
-    const selectQuery = 'SELECT * FROM product;';
-    const products = await executeQuery(selectQuery);
+        // Retrieve paginated products from the database
+        const selectQuery = 'SELECT * FROM product LIMIT ? OFFSET ?;';
+        const products = await executeQuery(selectQuery, [limit, offset]);
 
-    return products;
+        return products;
+    } catch (error) {
+        console.error('Error retrieving paginated products:', error.message);
+        throw error;
+    }
 }
 
+
 // Function to create a new product
-async function createProduct(name, price, image, categoryIds) {
+async function createProduct(name, price, image,description, categoryIds) {
     try {
         // Validate input
-        if (!name || !price || !image) {
-            return { success: false, message: 'Name, price, and image are required.' };
+        if (!name || !price || !image || !description) {
+            return { success: false, message: 'Name, price, and image and description are required.' };
         }
 
         // Insert the new product into the database
-        const insertQuery = 'INSERT INTO product (name, price, image) VALUES (?, ?, ?);';
-        const result = await executeQuery(insertQuery, [name, price, image]);
+        const insertQuery = 'INSERT INTO product (name, price, image,description) VALUES (?, ?, ?,?);';
+        const result = await executeQuery(insertQuery, [name, price, image,description]);
 
         // Retrieve the inserted product from the database
         const selectQuery = 'SELECT * FROM product WHERE id = ?;';
@@ -53,7 +61,7 @@ async function createProduct(name, price, image, categoryIds) {
         // Associate the product with categories
         await associateProductWithCategories(result.insertId, categoryIds);
 
-        return { success: true, product: newProduct };
+        return  newProduct ;
     } catch (error) {
         console.error('Error creating product:', error.message);
         throw error;
@@ -63,11 +71,11 @@ async function createProduct(name, price, image, categoryIds) {
 // Function to modify the information of a product
 async function modifyProduct(productId, newData) {
     try {
-        const { name, price, image, categoryIds } = newData;
+        const { name, price, image,description, categoryIds } = newData;
 
         // Update the product information in the database
-        const updateQuery = 'UPDATE product SET name = ?, price = ?, image = ? WHERE id = ?;';
-        await executeQuery(updateQuery, [name, price, image, productId]);
+        const updateQuery = 'UPDATE product SET name = ?, price = ?, image = ? ,description = ? WHERE id = ?;';
+        await executeQuery(updateQuery, [name, price, image,description, productId]);
 
         // Associate the product with categories
         await associateProductWithCategories(productId, categoryIds);
@@ -76,7 +84,7 @@ async function modifyProduct(productId, newData) {
         const selectQuery = 'SELECT * FROM product WHERE id = ?;';
         const [updatedProduct] = await executeQuery(selectQuery, [productId]);
 
-        return { success: true, product: updatedProduct };
+        return  updatedProduct ;
     } catch (error) {
         console.error('Error modifying product:', error.message);
         throw error;
@@ -113,20 +121,74 @@ async function disassociateProductFromCategories(productId) {
 }
 
 
-// Function to find products by product name
-async function findProductsByName(partialProductName) {
+// Function to find products by product name with pagination
+async function findProductsByNameWithPagination(partialProductName, productPerPage, pageNumber) {
     try {
-        // Search for products with names containing the provided partialProductName
-        const selectQuery = 'SELECT * FROM product WHERE name LIKE ?;';
-        const partialNamePattern = `%${partialProductName}%`;
-        const products = await executeQuery(selectQuery, [partialNamePattern]);
+        const offset = (pageNumber - 1) * productPerPage;
 
-        return { success: true, products };
+        // Search for products with names containing the provided partialProductName and include pagination
+        const selectQuery = 'SELECT * FROM product WHERE name LIKE ? LIMIT ? OFFSET ?;';
+        const partialNamePattern = `%${partialProductName}%`;
+        const products = await executeQuery(selectQuery, [partialNamePattern, productPerPage, offset]);
+
+        return products ;
     } catch (error) {
-        console.error('Error finding products by name:', error.message);
+        console.error('Error finding products by name with pagination:', error.message);
         throw error;
     }
 }
+
+// Function to find products by category with pagination
+async function findProductsByCategory(categoryName, productPerPage, pageNumber) {
+    try {
+        const offset = (pageNumber - 1) * productPerPage;
+
+        // Search for products with the given category name with pagination
+        const selectQuery = `
+            SELECT p.*
+            FROM product p
+            JOIN product_category pc ON p.id = pc.product_id
+            JOIN category c ON pc.category_id = c.id
+            WHERE c.name = ?
+            LIMIT ?
+            OFFSET ?;
+        `;
+
+        const products = await executeQuery(selectQuery, [categoryName, productPerPage, offset]);
+
+        return  products ;
+    } catch (error) {
+        console.error('Error finding products by category with pagination:', error.message);
+        throw error;
+    }
+}
+// Function to find products by product name with pagination and category filtering
+async function findProductsByNameWithPaginationAndCategory(partialProductName, productPerPage, pageNumber, categoryName) {
+    try {
+        const offset = (pageNumber - 1) * productPerPage;
+
+        // Search for products with names containing the provided partialProductName, include pagination, and filter by category
+        const selectQuery = `
+            SELECT p.*
+            FROM product p
+            JOIN product_category pc ON p.id = pc.product_id
+            JOIN category c ON pc.category_id = c.id
+            WHERE p.name LIKE ? AND c.name = ?
+            LIMIT ? OFFSET ?;
+        `;
+
+        const partialNamePattern = `%${partialProductName}%`;
+        const products = await executeQuery(selectQuery, [partialNamePattern, categoryName, productPerPage, offset]);
+
+        return  products ;
+    } catch (error) {
+        console.error('Error finding products by name with pagination and category:', error.message);
+        throw error;
+    }
+}
+
+
+
 
 
 
@@ -135,8 +197,10 @@ module.exports = {
     createProduct,
     modifyProduct,
     deleteProduct,
-    getAllProducts,
+    getProductsPaginated,
     associateProductWithCategories,
     disassociateProductFromCategories,
-    findProductsByName
+    findProductsByNameWithPagination,
+    findProductsByCategory,
+    findProductsByNameWithPaginationAndCategory
 };

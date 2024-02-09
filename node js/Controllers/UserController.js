@@ -7,6 +7,7 @@ const config = require('../Configs/config');
 
 // Use the executeQuery function from the imported module
 const  dbModule =  config.useTestDatabase ? require('../Database/dbTestConfig') : require('../Database/dbConfig');
+const {EmailServerConnection}  = require( '../Services/EmailService'); // Adjust the path accordingly
 
 const executeQuery = dbModule.executeQuery;
 
@@ -130,16 +131,7 @@ async function deleteUser( userIdToDelete) {
     }
 }
 
-// Fonction pour vérifier si un utilisateur est un administrateur
-async function isAdminUser(userId) {
-    try {
-        const user = await getUserById(userId);
-        return user && user.role === 'Admin';
-    } catch (error) {
-        console.error('Erreur lors de la vérification du statut d\'administrateur :', error.message);
-        throw error;
-    }
-}
+
 
 async function generateResetCode(email) {
     try {
@@ -149,7 +141,8 @@ async function generateResetCode(email) {
         // Calculer la date d'expiration du code
         const expirationDate = new Date();
         expirationDate.setMinutes(expirationDate.getMinutes() + RESET_CODE_EXPIRATION_MINUTES);
-
+        console.log(email);
+        console.log(resetCode);
         // Mettre à jour la base de données avec le code de réinitialisation et la date d'expiration
         const updateResetCodeQuery = `
             UPDATE user 
@@ -157,9 +150,13 @@ async function generateResetCode(email) {
             WHERE email = ?;
         `;
 
-        await executeQuery(updateResetCodeQuery, [resetCode, expirationDate, email]);
+        const {changedRows}=await executeQuery(updateResetCodeQuery, [resetCode, expirationDate, email]);
+        console.log(changedRows);
 
-        return { success: true, resetCode, expirationDate };
+        if (changedRows==1) return { success: true, resetCode, expirationDate };
+        else
+            return { success: false };
+
     } catch (error) {
         console.error('Erreur lors de la génération du code de réinitialisation :', error.message);
         throw error;
@@ -170,9 +167,11 @@ async function generateResetCode(email) {
 // Fonction pour envoyer le code de réinitialisation par e-mail
 async function sendResetCodeByEmail(email) {
     try {
+        console.log("here1")
+
         // Générer le code de réinitialisation en utilisant la fonction existante
         const { success, resetCode, expirationDate } = await generateResetCode(email);
-
+        console.log("here2")
         if (success) {
             // Construire le contenu de l'e-mail avec le code de réinitialisation
             const emailContent = `
@@ -195,6 +194,8 @@ async function sendResetCodeByEmail(email) {
 
             return { success: true, expirationDate };
         } else {
+            console.log("here3")
+
             return { success: false, message: 'Erreur lors de la génération du code de réinitialisation.' };
         }
     } catch (error) {
@@ -211,9 +212,7 @@ async function resetPassword(resetCode, newPassword) {
         if (!resetCode) {
             return { success: false, message: 'Le code de réinitialisation est manquant.' };
         }
-
-
-
+        console.log(resetCode);
         // Récupérer l'utilisateur associé au code de réinitialisation
         const getUserQuery = `
             SELECT id, reset_code_expires_at
@@ -222,7 +221,7 @@ async function resetPassword(resetCode, newPassword) {
         `;
 
         const [user] = await executeQuery(getUserQuery, [resetCode]);
-
+        console.log(user);
         // Vérifier que l'utilisateur existe et que le code de réinitialisation n'a pas expiré
         if (!user || !user.reset_code_expires_at || new Date() > new Date(user.reset_code_expires_at)) {
             return { success: false, message: 'Le code de réinitialisation est invalide ou a expiré.' };
@@ -249,25 +248,26 @@ async function resetPassword(resetCode, newPassword) {
 
 async function authenticateUser(usernameOrEmail, password) {
     try {
-        // Query the database to find the user
-        const getUserQuery = `
-            SELECT id,role, username, email, password
+        // Query the database to find all users with the given username or email
+        const getUsersQuery = `
+            SELECT id, role, username, email, password
             FROM user
             WHERE username = ? OR email = ?;
         `;
+        const users = await executeQuery(getUsersQuery, [usernameOrEmail, usernameOrEmail]);
 
-        const [user] = await executeQuery(getUserQuery, [usernameOrEmail, usernameOrEmail]);
+        // Check if any user with the given username or email exists and if the password is correct for at least one of them
+        for (const user of users) {
 
-
-        // Check if the user exists and the password is correct
-        if (user && md5(password) == (user.password)) {
-            // Generate a JWT with user information
-            const token = jwt.sign({ userId: user.id, username: user.username, email: user.email ,role: user.role}, JWT_SECRET, { expiresIn: '5h' });
-
-            return { success: true, token };
-        } else {
-            return { success: false, message: 'Incorrect credentials.' };
+            if (md5(password) === user.password) {
+                // Generate a JWT with user information
+                const token = jwt.sign({ userId: user.id, username: user.username, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '5h' });
+                return { success: true, token };
+            }
         }
+
+        // If no matching user or incorrect password for any user
+        return { success: false, message: 'Incorrect credentials.' };
     } catch (error) {
         console.error('Error authenticating user:', error.message);
         throw error;

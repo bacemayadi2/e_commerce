@@ -69,8 +69,11 @@ router.post('/user/reset-code', async (req, res) => {
     try {
         const { email } = req.body;
         const resetCode = await generateResetCode(email);
-        await sendResetCodeByEmail(email, resetCode);
-        res.json({ success: true });
+        const {success } =await sendResetCodeByEmail(email, resetCode);
+        if (success)
+            res.json({ success: true });
+        else
+            res.json({ success: false });
     } catch (error) {
         console.error('Erreur lors de la génération du code de réinitialisation :', error.message);
         res.status(500).json({ error: 'Erreur interne du serveur' });
@@ -81,8 +84,15 @@ router.post('/user/reset-code', async (req, res) => {
 router.post('/user/reset-password', async (req, res) => {
     try {
         const { resetCode, newPassword } = req.body;
-        await resetPassword(resetCode, newPassword);
-        res.json({ success: true });
+        const {success }=await resetPassword(resetCode, newPassword);
+        console.log(success);
+        if (success)
+        {
+            res.json({ success: true });
+        }
+        else {
+            res.status(500).json({ error: 'Erreur interne du serveur' });
+        }
     } catch (error) {
         console.error('Erreur lors de la réinitialisation du mot de passe :', error.message);
         res.status(500).json({ error: 'Erreur interne du serveur' });
@@ -97,7 +107,7 @@ router.post('/user/authenticate', async (req, res) => {
 
         if (success) {
           //  const token = jwt.sign({ userId: user.id, username: user.username, email: user.email ,role: user.role}, JWT_SECRET, { expiresIn: '5h' });
-            res.json({ token });
+            res.json({ token,username });
         } else {
             res.status(401).json({ error: 'L\'authentification a échoué' });
         }
@@ -112,7 +122,7 @@ router.put('/user/promote-admin/:userIdToPromote', verifyToken, verifyAdminRole,
     try {
         const { userIdToPromote } = req.params;
         const { userId } = req.user; // Extrait du jeton vérifié
-        await promoteUserToAdmin(userId, userIdToPromote);
+        const {success }=await promoteUserToAdmin(userId, userIdToPromote);
         res.json({ success: true });
     } catch (error) {
         console.error('Erreur lors de la promotion de l\'utilisateur à administrateur :', error.message);
@@ -125,8 +135,9 @@ router.put('/user/modify-password/:userId', verifyToken, async (req, res) => {
     try {
         const { userId } = req.params;
         const { oldPassword, newPassword, confirmPassword } = req.body;
-        await modifyUserPassword(userId, oldPassword, newPassword, confirmPassword);
-        res.json({ success: true });
+        const {success }=await modifyUserPassword(userId, oldPassword, newPassword, confirmPassword);
+        if (success)
+            res.json({ success: true });
     } catch (error) {
         console.error('Erreur lors de la modification du mot de passe de l\'utilisateur :', error.message);
         res.status(500).json({ error: 'Erreur interne du serveur' });

@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const { emailConfig } = require('./Configs/Config.js');
+const { emailConfig } = require('../Configs/Config.js');
 
 
 class EmailServerConnection {

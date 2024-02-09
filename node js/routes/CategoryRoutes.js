@@ -42,7 +42,7 @@ router.delete('/category/:categoryId', verifyToken, verifyAdminRole, async (req,
 });
 
 // Get all categories (requires authentication and admin role)
-router.get('/categories', verifyToken, verifyAdminRole, async (req, res) => {
+router.get('/categories', async (req, res) => {
     try {
         const categories = await categoryController.getAllCategories();
         res.json(categories);
