@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import {lazy, Suspense, useState} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NavBar from "./components/Navbar/Navbar";
@@ -15,6 +15,11 @@ const ForgetPassword = lazy(() => import("./pages/ForgetPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 function App() {
+  const [triggerTotalDistinctProducts, setTriggerTotalDistinctProducts] = useState(0);
+  const trigerTotalDistinctProducts = async () => {
+    setTriggerTotalDistinctProducts((trigger) => trigger + 1);
+
+  };
   return (
     <Suspense fallback={<Loader />}>
       <Router>
@@ -29,11 +34,12 @@ function App() {
           pauseOnHover
           theme="light"
         />
-        <NavBar  />
+        <NavBar trigger={triggerTotalDistinctProducts} />
+
         <Routes>
-          <Route path="/" element={<Shop />} />
+          <Route path="/" element={<Shop triggerTotalDistinctProducts={trigerTotalDistinctProducts} />} />
           <Route path="/shop/:id" element={<Product />} />
-          <Route path="/cart" element={<Cart />} />
+          <Route path="/cart" element={<Cart triggerTotalDistinctProducts={trigerTotalDistinctProducts} />} />
           <Route path="/login" element={<Login />} />
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/forgot-password" element={<ForgetPassword />} />

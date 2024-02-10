@@ -16,16 +16,17 @@ async function getCartDetail(CartID) {
             LEFT JOIN product p ON cl.product_id = p.id
             WHERE c.id = ?
         `;
-
         const cartResult = await executeQuery(latestCartQuery, [CartID]);
-        if (cartResult.length > 0) {
+        console.log(cartResult[0].quantity);
+
+        if (cartResult[0].quantity != null) {
                 // Calculate total price
                 const Price = await calculateTotalPriceWithDiscount(cartResult[0].cartId);
 
                 // If the cart is not associated with a purchase, return its details and total price
                 return {success: true, cartDetails: cartResult, discountedPrice: Price.discountedPrice,priceWithoutDiscount: Price.priceWithoutDiscount};
                 }
-        return {success: true,cartDetails: cartResult}
+        return {success: true,cartDetails: cartResult,discountedPrice: 0,priceWithoutDiscount: 0}
 
     } catch (error) {
         console.error('Error getting user cart:', error.message);

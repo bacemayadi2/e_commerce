@@ -9,7 +9,7 @@ import {
 
 const token = localStorage.getItem('token');
 
-const Cart = () => {
+const Cart = ({triggerTotalDistinctProducts}) => {
   const dispatch = useDispatch();
   const [cartDetails, setCartDetails] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -28,6 +28,7 @@ const Cart = () => {
         setCartDetails(result.cartDetails);
         setDiscountedPrice(result.discountedPrice);
         setPriceWithoutDiscount(result.priceWithoutDiscount);
+        triggerTotalDistinctProducts();
       } else {
         // Handle error
         console.error("Error fetching cart details:", result.message);
@@ -123,11 +124,13 @@ const Cart = () => {
         <Container>
           <Row className="justify-content-center">
             <Col md={8}>
-              {cartDetails.length === 0 && (
+              {cartDetails.length > 0 && cartDetails[0].productId == null ?(
+
                   <h1 className="no-items product">No Items are added in Cart</h1>
-              )}
+              ) : (
+                  <>
               {cartDetails.map((item) => {
-                const productQty = item.price * item.quantity;
+                const producttotalprice = (item.price * item.quantity).toFixed(3);
                 return (
                     <div className="cart-list" key={item.productId}>
                       <Row>
@@ -139,8 +142,8 @@ const Cart = () => {
                             <Col xs={12} sm={9} className="cart-details">
                               <h3>{item.productName}</h3>
                               <h4>
-                                ${item.price}.00 * {item.quantity}
-                                <span>${productQty}.00</span>
+                                ${item.price} * {item.quantity}
+                                <span>${producttotalprice}</span>
                               </h4>
                             </Col>
                             <Col xs={12} sm={3} className="cartControl">
@@ -169,6 +172,8 @@ const Cart = () => {
                     </div>
                 );
               })}
+                  </>
+                )}
             </Col>
             <Col md={4}>
               <div className="cart-total">
@@ -179,7 +184,7 @@ const Cart = () => {
                     {discountedPrice < priceWithoutDiscount ? (
                         <>
                       <span className="original-price">
-                        <s>{priceWithoutDiscount} dinar</s>
+                        <s>{priceWithoutDiscount.toFixed(3)} dinar</s>
                       </span>
                       <br/>
                           <span className="discounted-price">{discountedPrice} dinar</span>
@@ -187,7 +192,7 @@ const Cart = () => {
                           <span className="discount-msg">30% de remise car le total est supérieur à 100</span>
                         </>
                     ) : (
-                        <span>{priceWithoutDiscount} dinar</span>
+                        <span>{priceWithoutDiscount.toFixed(3)} dinar</span>
                     )}
                   </h3>
                 </div>

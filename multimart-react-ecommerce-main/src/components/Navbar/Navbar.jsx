@@ -5,10 +5,14 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { BsBoxArrowRight } from "react-icons/bs";
 
-const NavBar = () => {
+const NavBar = ({ trigger }) => {
   const [totalDistinctProducts, setTotalDistinctProducts] = useState(0);
   const username = localStorage.getItem('username');
-
+  useEffect(() => {
+    if (trigger) {
+      fetchTotalDistinctProducts();
+    }
+  }, [trigger]);
   const handleLogout = () => {
     // Perform logout logic (clear local storage, redirect, etc.)
     localStorage.removeItem('username');

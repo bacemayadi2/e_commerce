@@ -4,7 +4,7 @@ import ShopList from "../components/ShopList";
 import Banner from "../components/Banner/Banner";
 import useWindowScrollToTop from "../hooks/useWindowScrollToTop";
 
-const Shop = () => {
+const Shop = ({ triggerTotalDistinctProducts }) => {
   const [filterList, setFilterList] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -92,11 +92,13 @@ const Shop = () => {
   };
 
   return (
+
       <Fragment>
         <Banner title="product" />
         <section className="filter-bar">
           <Container className="filter-bar-container">
             <Row className="justify-content-between">
+
               <Col md={4}>
                 <Form.Group controlId="categorySelector">
                   <Form.Label>Category:</Form.Label>
@@ -148,6 +150,7 @@ const Shop = () => {
                     currentPage={currentPage}
                     perPage={perPage}
                     onPageChange={handlePageChange}
+                    triggerTotalDistinctProducts={triggerTotalDistinctProducts}
                 />
               </Col>
             </Row>

@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../app/features/cart/cartSlice";
 
-const ProductCard = ({ title, productItem ,fetchTotalDistinctProducts}) => {
+const ProductCard = ({ title, productItem ,triggerTotalDistinctProducts}) => {
     const dispatch = useDispatch();
     const router = useNavigate();
 
@@ -30,6 +30,8 @@ const ProductCard = ({ title, productItem ,fetchTotalDistinctProducts}) => {
                 // If API call is successful, dispatch addToCart action and show success toast
                 dispatch(addToCart({ product: productItem, num: 1 }));
                 toast.success("Product has been added to cart!");
+                triggerTotalDistinctProducts();
+
 
             } else {
                 // If API call fails, show error toast
@@ -55,6 +57,7 @@ const ProductCard = ({ title, productItem ,fetchTotalDistinctProducts}) => {
             <div className="product-like">
                 <ion-icon name="heart-outline"></ion-icon>
             </div>
+
             <div className="product-details">
                 <h3 onClick={() => handelClick()}>{productItem.name}</h3>
                 <div className="price">
