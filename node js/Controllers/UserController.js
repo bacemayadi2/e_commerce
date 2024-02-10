@@ -141,8 +141,6 @@ async function generateResetCode(email) {
         // Calculer la date d'expiration du code
         const expirationDate = new Date();
         expirationDate.setMinutes(expirationDate.getMinutes() + RESET_CODE_EXPIRATION_MINUTES);
-        console.log(email);
-        console.log(resetCode);
         // Mettre à jour la base de données avec le code de réinitialisation et la date d'expiration
         const updateResetCodeQuery = `
             UPDATE user 
@@ -151,7 +149,6 @@ async function generateResetCode(email) {
         `;
 
         const {changedRows}=await executeQuery(updateResetCodeQuery, [resetCode, expirationDate, email]);
-        console.log(changedRows);
 
         if (changedRows==1) return { success: true, resetCode, expirationDate };
         else
@@ -167,11 +164,9 @@ async function generateResetCode(email) {
 // Fonction pour envoyer le code de réinitialisation par e-mail
 async function sendResetCodeByEmail(email) {
     try {
-        console.log("here1")
 
         // Générer le code de réinitialisation en utilisant la fonction existante
         const { success, resetCode, expirationDate } = await generateResetCode(email);
-        console.log("here2")
         if (success) {
             // Construire le contenu de l'e-mail avec le code de réinitialisation
             const emailContent = `
@@ -194,7 +189,6 @@ async function sendResetCodeByEmail(email) {
 
             return { success: true, expirationDate };
         } else {
-            console.log("here3")
 
             return { success: false, message: 'Erreur lors de la génération du code de réinitialisation.' };
         }
@@ -212,7 +206,6 @@ async function resetPassword(resetCode, newPassword) {
         if (!resetCode) {
             return { success: false, message: 'Le code de réinitialisation est manquant.' };
         }
-        console.log(resetCode);
         // Récupérer l'utilisateur associé au code de réinitialisation
         const getUserQuery = `
             SELECT id, reset_code_expires_at
@@ -221,7 +214,6 @@ async function resetPassword(resetCode, newPassword) {
         `;
 
         const [user] = await executeQuery(getUserQuery, [resetCode]);
-        console.log(user);
         // Vérifier que l'utilisateur existe et que le code de réinitialisation n'a pas expiré
         if (!user || !user.reset_code_expires_at || new Date() > new Date(user.reset_code_expires_at)) {
             return { success: false, message: 'Le code de réinitialisation est invalide ou a expiré.' };
@@ -382,7 +374,6 @@ async function getUserById(userId) {
 
     if (user.length === 0) {
         // Si aucun utilisateur n'est trouvé avec l'ID spécifié, retourner null ou gérer en conséquence
-        console.log("user not found");
         return null;
     }
 

@@ -73,7 +73,12 @@ const Cart = ({triggerTotalDistinctProducts}) => {
   const handleDecreaseQty = async (product) => {
     try {
       if (product.quantity==1)  //product should be deleted instade of product quantity adjusted
+        {
           handleDeleteProduct(product);
+          return; // Stop executing the rest of the function
+
+        }
+
       const response = await fetch(`http://172.10.0.1:3002/api/cart/affect-product`, {
         method: "POST",
         headers: {
@@ -124,7 +129,7 @@ const Cart = ({triggerTotalDistinctProducts}) => {
         <Container>
           <Row className="justify-content-center">
             <Col md={8}>
-              {cartDetails.length > 0 && cartDetails[0].productId == null ?(
+              { cartDetails[0]?.productId == null ?(
 
                   <h1 className="no-items product">No Items are added in Cart</h1>
               ) : (

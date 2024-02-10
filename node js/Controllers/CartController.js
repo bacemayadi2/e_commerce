@@ -17,7 +17,6 @@ async function getCartDetail(CartID) {
             WHERE c.id = ?
         `;
         const cartResult = await executeQuery(latestCartQuery, [CartID]);
-        console.log(cartResult[0].quantity);
 
         if (cartResult[0].quantity != null) {
                 // Calculate total price

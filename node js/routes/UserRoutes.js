@@ -85,7 +85,6 @@ router.post('/user/reset-password', async (req, res) => {
     try {
         const { resetCode, newPassword } = req.body;
         const {success }=await resetPassword(resetCode, newPassword);
-        console.log(success);
         if (success)
         {
             res.json({ success: true });
