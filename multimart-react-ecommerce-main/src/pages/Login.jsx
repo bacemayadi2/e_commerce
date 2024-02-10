@@ -41,6 +41,7 @@ const Login = () => {
                 console.log(localStorage.getItem('username'));
                 window.location.href = '/';
 
+
             })
             .catch(error => {
                 // Handle errors

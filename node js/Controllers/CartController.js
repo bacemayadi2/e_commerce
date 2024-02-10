@@ -6,7 +6,35 @@ const dbModule = useTestDatabase ? require('../Database/dbTestConfig') : require
 const executeQuery = dbModule.executeQuery;
 
 // Function to get the user's cart (latest created, not associated with any purchase)
-async function getUserCart(userId) {
+async function getCartDetail(CartID) {
+    try {
+        // Get the latest cart for the user
+        const latestCartQuery = `
+            SELECT c.id AS cartId, c.payed as payed, cl.quantity, p.id AS productId, p.name AS productName, p.price, p.image, p.description
+            FROM cart c
+            LEFT JOIN cart_line cl ON c.id = cl.cart_id
+            LEFT JOIN product p ON cl.product_id = p.id
+            WHERE c.id = ?
+        `;
+
+        const cartResult = await executeQuery(latestCartQuery, [CartID]);
+        if (cartResult.length > 0) {
+                // Calculate total price
+                const Price = await calculateTotalPriceWithDiscount(cartResult[0].cartId);
+
+                // If the cart is not associated with a purchase, return its details and total price
+                return {success: true, cartDetails: cartResult, discountedPrice: Price.discountedPrice,priceWithoutDiscount: Price.priceWithoutDiscount};
+                }
+        return {success: true,cartDetails: cartResult}
+
+    } catch (error) {
+        console.error('Error getting user cart:', error.message);
+        throw error;
+    }
+}
+
+// Function to get the user's cart (latest created, not associated with any purchase)
+async function getUserCartID(userId) {
     try {
         // Get the latest cart for the user
         const latestCartQuery = `
@@ -34,6 +62,7 @@ async function getUserCart(userId) {
         throw error;
     }
 }
+
 
 
 // Function to create a new cart for the connected user
@@ -78,19 +107,32 @@ async function affectProductToCart(productId, cartId, quantity) {
     }
 }
 
-// Function to update the quantity of a product in the cart
-async function updateProductQuantityInCart(productId, cartId, quantity) {
+// Function to increase product quantity in the cart by one or add it if not present
+async function increaseProductQuantityInCart(productId, cartId) {
     try {
-        // Update the quantity in the cart line (association) for the specified product and cart
-        const updateCartLineQuery = 'UPDATE cart_line SET quantity = ? WHERE product_id = ? AND cart_id = ?;';
-        await executeQuery(updateCartLineQuery, [quantity, productId, cartId]);
+        // Check if the product is already associated with the cart
+        const existingCartLineQuery = `
+            SELECT id, quantity FROM cart_line
+            WHERE product_id = ? AND cart_id = ?;
+        `;
+
+        const [existingCartLine] = await executeQuery(existingCartLineQuery, [productId, cartId]);
+
+        if (existingCartLine) {
+            affectProductToCart(productId,cartId,existingCartLine.quantity + 1)
+            // If the product is already associated with the cart, increase the quantity by one
+        } else {
+            // If the product is not associated with the cart, add it with quantity 1
+            await affectProductToCart(productId, cartId, 1);
+        }
 
         return { success: true };
     } catch (error) {
-        console.error('Error updating product quantity in cart:', error.message);
+        console.error('Error increasing product quantity in cart:', error.message);
         throw error;
     }
 }
+
 
 // Function to remove a product from the cart
 async function removeProductFromCart(productId, cartId) {
@@ -134,7 +176,7 @@ async function deleteCart(cartId) {
 }
 async function updatePaymentDate(cartId) {
     try {
-        const updateQuery = 'UPDATE cart SET payment_date = NOW() WHERE id = ?;';
+        const updateQuery = 'UPDATE cart SET payed = NOW() WHERE id = ?;';
         await executeQuery(updateQuery, [cartId]);
 
         return { success: true, message: 'Payment date updated successfully.' };
@@ -155,16 +197,58 @@ async function isUserCart(userId, cartId) {
         throw error;
     }
 }
+async function getTotalDistinctProductsInCart(cartId) {
+    try {
+        // Query to get the total number of distinct products in the specified cart
+        const totalDistinctProductsQuery = `
+            SELECT COUNT(DISTINCT product_id) AS totalDistinctProducts
+            FROM cart_line
+            WHERE cart_id = ?;
+        `;
 
+        // Execute the query and retrieve the total number of distinct products
+        const [result] = await executeQuery(totalDistinctProductsQuery, [cartId]);
+
+        // Extract the total number of distinct products from the query result
+        const totalDistinctProducts = result.totalDistinctProducts || 0;
+
+        return totalDistinctProducts;
+    } catch (error) {
+        console.error('Error calculating total number of distinct products in the cart:', error.message);
+        throw error;
+    }
+}
+// Function to calculate total price with discount
+async function calculateTotalPriceWithDiscount(cartId) {
+    try {
+        // Get the total price for the given cart
+        const totalQuery = `
+            SELECT SUM(cl.quantity * p.price) AS total
+            FROM cart_line cl
+            JOIN product p ON cl.product_id = p.id
+            WHERE cl.cart_id = ?;
+        `;
+
+        const [{ total }] = await executeQuery(totalQuery, [cartId]);
+        // Apply a 25% discount if the total price is higher than 100
+        const discountedPrice = total > 100 ? (total * 0.75).toFixed(3) : total.toFixed(3);
+
+        return {discountedPrice: discountedPrice,  priceWithoutDiscount : total };
+    } catch (error) {
+        console.error('Error calculating total price with discount:', error.message);
+        throw error;
+    }
+}
 
 module.exports = {
-    getUserCart,
-    createNewCartForUser,
     affectProductToCart,
-    updateProductQuantityInCart,
     removeProductFromCart,
     viewAllCarts,
     deleteCart,
     updatePaymentDate,
     isUserCart,
+    getUserCartID,
+    getCartDetail,
+    getTotalDistinctProductsInCart,
+    increaseProductQuantityInCart
 };

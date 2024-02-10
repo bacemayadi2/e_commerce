@@ -11,29 +11,13 @@ router.get('/cart/user', verifyToken, async (req, res) => {
         const userId = req.user.id;
 
         // Call the controller function to get the user's cart
-        const result = await cartController.getUserCart(userId);
+        const cartId = (await cartController.getUserCartID(userId)).cartId;
+        const result = await cartController.getCartDetail(cartId);
 
         // Respond with the result
         res.json(result);
     } catch (error) {
         console.error('Error getting user cart:', error.message);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Create a new cart for the connected user (Only connected user)
-router.post('/cart/create', verifyToken, async (req, res) => {
-    try {
-        // Extract user ID from the authenticated user
-        const userId = req.user.id;
-
-        // Call the controller function to create a new cart for the user
-        const result = await cartController.createNewCartForUser(userId);
-
-        // Respond with the result
-        res.json(result);
-    } catch (error) {
-        console.error('Error creating user cart:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -46,7 +30,7 @@ router.post('/cart/affect-product', verifyToken, async (req, res) => {
 
         // Extract product details from the request body
         const { success ,productId, quantity } = req.body;
-        let cartId= (await cartController.getUserCart(userId)).cartId;
+        const cartId = (await cartController.getUserCartID(userId)).cartId;
         // Call the controller function to affect a product to the user's cart
         const result = await cartController.affectProductToCart(productId,cartId , quantity);
 
@@ -58,38 +42,17 @@ router.post('/cart/affect-product', verifyToken, async (req, res) => {
     }
 });
 
-// Update the quantity of a specific product in the user's cart (Only connected user)
-router.put('/cart/update-product/:productId', verifyToken, async (req, res) => {
-    try {
-        // Extract user ID from the authenticated user
-        const userId = req.user.id;
-
-        // Extract product ID and new quantity from the request parameters and body
-        const { productId } = req.params;
-        const { quantity } = req.body;
-
-        // Call the controller function to update the product quantity in the user's cart
-        const result = await cartController.updateProductQuantityInCart(userId, productId, quantity);
-
-        // Respond with the result
-        res.json(result);
-    } catch (error) {
-        console.error('Error updating product quantity in user cart:', error.message);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
 
 // Remove a product from the user's cart (Only connected user)
 router.delete('/cart/remove-product/:productId', verifyToken, async (req, res) => {
     try {
         // Extract user ID from the authenticated user
         const userId = req.user.id;
-
-        // Extract product ID from the request parameters
+        const cartId = (await cartController.getUserCartID(userId)).cartId;
         const { productId } = req.params;
 
         // Call the controller function to remove the product from the user's cart
-        const result = await cartController.removeProductFromCart(userId, productId);
+        const result = await cartController.removeProductFromCart(productId,cartId);
 
         // Respond with the result
         res.json(result);
@@ -99,6 +62,25 @@ router.delete('/cart/remove-product/:productId', verifyToken, async (req, res) =
     }
 });
 
+// Route to get the total number of distinct products in the user's cart (Only connected user)
+router.get('/cart/total-distinct-products', verifyToken, async (req, res) => {
+    try {
+        // Extract user ID from the authenticated user
+        const userId = req.user.id;
+
+        // Call the controller function to get the cart ID for the user
+        const cartId = (await cartController.getUserCartID(userId)).cartId;
+
+        // Call the controller function to calculate the total number of distinct products in the cart
+        const totalDistinctProducts = await cartController.getTotalDistinctProductsInCart(cartId);
+
+        // Respond with the total number of distinct products
+        res.json({ totalDistinctProducts });
+    } catch (error) {
+        console.error('Error getting total distinct products in user cart:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 // View all carts (Only for admin)
 router.get('/cart/all', verifyToken, verifyAdminRole, async (req, res) => {
     try {
@@ -130,23 +112,39 @@ router.delete('/cart/delete/:cartId', verifyToken, verifyAdminRole, async (req, 
     }
 });
 // Route to update payment date (requires authentication)
-router.put('/cart/pay/:cartId', verifyToken, async (req, res) => {
+router.put('/cart/pay', verifyToken, async (req, res) => {
     try {
         const { cartId } = req.params;
         const userId = req.user.id; // Get the user ID from the authenticated user
+        const resCartId = await cartController.getUserCartID(userId);
 
-        // Check if the cart belongs to the authenticated user
-        const isUserCart = await cartController.isUserCart(userId, cartId);
-        if (!isUserCart) {
-            return res.status(403).json({ error: 'Forbidden - Cart does not belong to the user' });
-        }
 
-        const result = await cartController.updatePaymentDate(cartId);
+
+        const result = await cartController.updatePaymentDate(resCartId.cartId);
         res.json(result);
     } catch (error) {
         console.error('Error updating payment date:', error.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+// Increase product quantity in the user's cart (Only connected user)
+router.put('/cart/increase-product-quantity/:productId', verifyToken, async (req, res) => {
+    try {
+        // Extract user ID from the authenticated user
+        const userId = req.user.id;
+        const cartId = (await cartController.getUserCartID(userId)).cartId;
+        const { productId } = req.params;
+
+        // Call the controller function to increase product quantity in the user's cart
+        const result = await cartController.increaseProductQuantityInCart(productId, cartId);
+
+        // Respond with the result
+        res.json(result);
+    } catch (error) {
+        console.error('Error increasing product quantity in user cart:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 module.exports = router;

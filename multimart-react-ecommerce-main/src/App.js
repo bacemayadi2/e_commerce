@@ -29,7 +29,7 @@ function App() {
           pauseOnHover
           theme="light"
         />
-        <NavBar />
+        <NavBar  />
         <Routes>
           <Route path="/" element={<Shop />} />
           <Route path="/shop/:id" element={<Product />} />
