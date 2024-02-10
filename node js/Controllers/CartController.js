@@ -4,28 +4,42 @@ const { useTestDatabase } = config;
 // Use the executeQuery function from the imported module
 const dbModule = useTestDatabase ? require('../Database/dbTestConfig') : require('../Database/dbConfig');
 const executeQuery = dbModule.executeQuery;
+const ProductController = require('./ProductController');
 
 // Function to get the user's cart (latest created, not associated with any purchase)
-async function getCartDetail(CartID) {
+async function getCartDetail(CartID,userId) {
     try {
         // Get the latest cart for the user
         const latestCartQuery = `
-            SELECT c.id AS cartId, c.payed as payed, cl.quantity, p.id AS productId, p.name AS productName, p.price, p.image, p.description
+            SELECT c.id    AS cartId,
+                   c.payed as payed,
+                   cl.quantity,
+                   p.id    AS productId,
+                   p.name  AS productName,
+                   p.price,
+                   p.image,
+                   p.description
             FROM cart c
-            LEFT JOIN cart_line cl ON c.id = cl.cart_id
-            LEFT JOIN product p ON cl.product_id = p.id
+                     LEFT JOIN cart_line cl ON c.id = cl.cart_id
+                     LEFT JOIN product p ON cl.product_id = p.id
             WHERE c.id = ?
         `;
         const cartResult = await executeQuery(latestCartQuery, [CartID]);
 
         if (cartResult[0].quantity != null) {
-                // Calculate total price
-                const Price = await calculateTotalPriceWithDiscount(cartResult[0].cartId);
+            // Calculate total price
+            const Price = await calculateTotalPriceWithDiscount(cartResult[0].cartId);
 
-                // If the cart is not associated with a purchase, return its details and total price
-                return {success: true, cartDetails: cartResult, discountedPrice: Price.discountedPrice,priceWithoutDiscount: Price.priceWithoutDiscount};
-                }
-        return {success: true,cartDetails: cartResult,discountedPrice: 0,priceWithoutDiscount: 0}
+            // If the cart is not associated with a purchase, return its details and total price
+            return {
+                success: true,
+                cartDetails: cartResult,
+                discountedPrice: Price.discountedPrice,
+                priceWithoutDiscount: Price.priceWithoutDiscount
+            };
+        }
+        createNewCartForUser(userId);
+        getCartDetail(userId); // fill
 
     } catch (error) {
         console.error('Error getting user cart:', error.message);
@@ -148,18 +162,55 @@ async function removeProductFromCart(productId, cartId) {
     }
 }
 
-// Function to view all carts
-async function viewAllCarts() {
+// Function to view all paid carts with product details
+async function viewAllCartsPayedWithDetails() {
     try {
-        const allCartsQuery = 'SELECT * FROM cart;';
-        const carts = await executeQuery(allCartsQuery);
+        // Fetch all paid carts
 
-        return { success: true, carts };
+        const paidCartsQuery = 'SELECT cart.*, user.username FROM cart JOIN user ON cart.user_id = user.id WHERE cart.payed IS NOT NULL;';
+
+      //  const paidCartsQuery = 'SELECT * FROM cart WHERE payed IS NOT NULL;';
+        const paidCarts = await executeQuery(paidCartsQuery);
+
+        // Fetch details for each paid cart
+        const cartsWithDetails = await Promise.all(
+            paidCarts.map(async (cart) => {
+                // Fetch cart lines for the current
+
+                const cartLinesQuery = 'SELECT * FROM cart_line WHERE cart_id = ?;';
+                const cartLines = await executeQuery(cartLinesQuery, [cart.id]);
+
+                // Calculate total price with discount for the current cart
+                const { discountedPrice, priceWithoutDiscount } = await calculateTotalPriceWithDiscount(cart.id);
+
+                // Fetch product details for each cart line
+                const productsWithDetails = await Promise.all(
+                    cartLines.map(async (cartLine) => {
+                        const productDetails = await ProductController.findProductById(cartLine.product_id);
+                        return {
+                            product: productDetails,
+                            quantity: cartLine.quantity,
+                        };
+                    })
+                );
+
+                return {
+                    cart: cart,
+                    products: productsWithDetails,
+                    discountedPrice: discountedPrice,
+                    priceWithoutDiscount: priceWithoutDiscount,
+                };
+            })
+        );
+
+        return { success: true, carts: cartsWithDetails };
     } catch (error) {
-        console.error('Error viewing all carts:', error.message);
+        console.error('Error viewing all paid carts with details:', error.message);
         throw error;
     }
 }
+
+
 
 // Function to delete a cart
 async function deleteCart(cartId) {
@@ -197,21 +248,23 @@ async function isUserCart(userId, cartId) {
         throw error;
     }
 }
-async function getTotalDistinctProductsInCart(cartId) {
+async function getTotalProductsInCart(cartId) {
     try {
-        // Query to get the total number of distinct products in the specified cart
-        const totalDistinctProductsQuery = `
-            SELECT COUNT(DISTINCT product_id) AS totalDistinctProducts
-            FROM cart_line
-            WHERE cart_id = ?;
-        `;
+        const totalProducts = `
+            SELECT cl.cart_id, SUM(cl.quantity) AS totalQuantity
+            FROM cart_line cl
+                     JOIN cart c ON cl.cart_id = c.id
+            WHERE c.payed IS NULL AND cl.cart_id = ?
+            GROUP BY cl.cart_id;
+`;
+
 
         // Execute the query and retrieve the total number of distinct products
-        const [result] = await executeQuery(totalDistinctProductsQuery, [cartId]);
+        const [result] = await executeQuery(totalProducts, [cartId]);
 
         // Extract the total number of distinct products from the query result
-        const totalDistinctProducts = result.totalDistinctProducts || 0;
-
+        const totalDistinctProducts = result.totalQuantity || 0;
+        console.log(totalDistinctProducts);
         return totalDistinctProducts;
     } catch (error) {
         console.error('Error calculating total number of distinct products in the cart:', error.message);
@@ -243,12 +296,12 @@ async function calculateTotalPriceWithDiscount(cartId) {
 module.exports = {
     affectProductToCart,
     removeProductFromCart,
-    viewAllCarts,
+    viewAllCartsPayedWithDetails,
     deleteCart,
     updatePaymentDate,
     isUserCart,
     getUserCartID,
     getCartDetail,
-    getTotalDistinctProductsInCart,
-    increaseProductQuantityInCart
+    increaseProductQuantityInCart,
+    getTotalProductsInCart
 };

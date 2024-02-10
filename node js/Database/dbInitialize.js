@@ -13,7 +13,7 @@ const createTablesQuery = `
     reset_code_expires_at DATETIME
   );
 
-
+ 
 
   CREATE TABLE IF NOT EXISTS cart (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,8 +28,8 @@ const createTablesQuery = `
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     price VARCHAR(255) NOT NULL,
-    image VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL 
+    image MEDIUMBLOB NOT NULL,
+    description VARCHAR(255) NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS category (
@@ -54,6 +54,7 @@ const createTablesQuery = `
     FOREIGN KEY (category_id) REFERENCES category(id)
   )
 `;
+
 // Fonction pour vérifier si la base de données existe
 async function databaseExists() {
     try {

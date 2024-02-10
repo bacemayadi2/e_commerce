@@ -17,6 +17,7 @@ router.get('/cart/user', verifyToken, async (req, res) => {
         // Respond with the result
         res.json(result);
     } catch (error) {
+
         console.error('Error getting user cart:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -63,29 +64,30 @@ router.delete('/cart/remove-product/:productId', verifyToken, async (req, res) =
 });
 
 // Route to get the total number of distinct products in the user's cart (Only connected user)
-router.get('/cart/total-distinct-products', verifyToken, async (req, res) => {
+router.get('/cart/total-products', verifyToken, async (req, res) => {
     try {
         // Extract user ID from the authenticated user
         const userId = req.user.id;
-
         // Call the controller function to get the cart ID for the user
         const cartId = (await cartController.getUserCartID(userId)).cartId;
+        console.log(cartId)
 
+        console.log(await cartController.getTotalProductsInCart(cartId));
         // Call the controller function to calculate the total number of distinct products in the cart
-        const totalDistinctProducts = await cartController.getTotalDistinctProductsInCart(cartId);
+        const totalProducts = await cartController.getTotalProductsInCart(cartId);
 
         // Respond with the total number of distinct products
-        res.json({ totalDistinctProducts });
+        res.json({ totalProducts });
     } catch (error) {
         console.error('Error getting total distinct products in user cart:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-// View all carts (Only for admin)
+// View all carts with details (Only for admin)
 router.get('/cart/all', verifyToken, verifyAdminRole, async (req, res) => {
     try {
         // Call the controller function to get all carts
-        const result = await cartController.viewAllCarts();
+        const result = await cartController.viewAllCartsPayedWithDetails();
 
         // Respond with the result
         res.json(result);

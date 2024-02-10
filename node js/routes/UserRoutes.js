@@ -1,6 +1,6 @@
 // userRoutes.js
 const express = require('express');
-const { isUserAdmin,createUser, modifyUser, deleteUser, generateResetCode, sendResetCodeByEmail, resetPassword, authenticateUser, promoteUserToAdmin,modifyUserPassword,findAllUser,findUserByUsername,findUserByEmail } = require('../Controllers/UserController');
+const { isUserAdmin,createUser, modifyUser, deleteUser, generateResetCode, sendResetCodeByEmail, resetPassword, authenticateUser, promoteUserToAdmin,modifyUserPassword,findAllUser,findUserByUsername,findUserByEmail ,unpromoteUserToAdmin} = require('../Controllers/UserController');
 const { verifyToken, verifyAdminRole } = require('../Middlewares/authMiddleware');
 
 const router = express.Router();
@@ -120,8 +120,7 @@ router.post('/user/authenticate', async (req, res) => {
 router.put('/user/promote-admin/:userIdToPromote', verifyToken, verifyAdminRole, async (req, res) => {
     try {
         const { userIdToPromote } = req.params;
-        const { userId } = req.user; // Extrait du jeton vérifié
-        const {success }=await promoteUserToAdmin(userId, userIdToPromote);
+        const {success }=await promoteUserToAdmin(userIdToPromote);
         res.json({ success: true });
     } catch (error) {
         console.error('Erreur lors de la promotion de l\'utilisateur à administrateur :', error.message);
@@ -129,6 +128,17 @@ router.put('/user/promote-admin/:userIdToPromote', verifyToken, verifyAdminRole,
     }
 });
 
+// enlever le role admin a  l'utilisateur (nécessite une authentification et un rôle d'administrateur)
+router.put('/user/unpromote-admin/:userIdToPromote', verifyToken, verifyAdminRole, async (req, res) => {
+    try {
+        const { userIdToPromote } = req.params;
+        const {success }=await unpromoteUserToAdmin(userIdToPromote);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erreur lors de la promotion de l\'utilisateur à administrateur :', error.message);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
 // Modifier le mot de passe de l'utilisateur (requiert une authentification)
 router.put('/user/modify-password/:userId', verifyToken, async (req, res) => {
     try {
@@ -178,4 +188,15 @@ router.get('/user/find-by-email/:partialEmail/:itemsPerPage/:currentPage', verif
         res.status(500).json({ error: 'Erreur interne du serveur' });
     }
 });
+// Route to check if the user is an admin
+router.get('/check-admin', verifyToken,verifyAdminRole,(req, res) => {
+    try {
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error checking admin status:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
     module.exports = router;
+

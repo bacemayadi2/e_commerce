@@ -253,7 +253,7 @@ async function authenticateUser(usernameOrEmail, password) {
 
             if (md5(password) === user.password) {
                 // Generate a JWT with user information
-                const token = jwt.sign({ userId: user.id, username: user.username, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '5h' });
+                const token = jwt.sign({ userId: user.id, username: user.username, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '512h' });
                 return { success: true, token };
             }
         }
@@ -271,10 +271,28 @@ async function authenticateUser(usernameOrEmail, password) {
 async function promoteUserToAdmin( userIdToPromote) {
     try {
 
-
+        console.log(userIdToPromote);
         // Mettre à jour le rôle de l'utilisateur à 'Admin'
         const promoteUserQuery = `
             UPDATE user SET role = 'Admin' WHERE id = ?;
+        `;
+
+        await executeQuery(promoteUserQuery, [userIdToPromote]);
+
+        return { success: true, message: 'Utilisateur promu au rôle d\'administrateur avec succès.' };
+    } catch (error) {
+        console.error('Erreur lors de la promotion de l\'utilisateur au rôle d\'administrateur :', error.message);
+        throw error;
+    }
+}
+// Fonction pour metre un admin en  un utilisateur
+async function unpromoteUserToAdmin( userIdToPromote) {
+    try {
+
+        console.log(userIdToPromote);
+        // Mettre à jour le rôle de l'utilisateur à 'Admin'
+        const promoteUserQuery = `
+            UPDATE user SET role = 'Client' WHERE id = ?;
         `;
 
         await executeQuery(promoteUserQuery, [userIdToPromote]);
@@ -401,5 +419,6 @@ module.exports = {
     findUserByEmail,
     getUserById,
     isUserAdmin,
+    unpromoteUserToAdmin,
 
 };

@@ -49,9 +49,13 @@ async function modifyCategory(categoryId, newName) {
 // Function to delete a category
 async function deleteCategory(categoryId) {
     try {
-        // Delete the category from the database
-        const deleteQuery = 'DELETE FROM category WHERE id = ?;';
-        await executeQuery(deleteQuery, [categoryId]);
+        // Delete entries from product_category table first
+        const deleteProductCategoryQuery = 'DELETE FROM product_category WHERE category_id = ?;';
+        await executeQuery(deleteProductCategoryQuery, [categoryId]);
+
+        // Now, delete the category from the database
+        const deleteCategoryQuery = 'DELETE FROM category WHERE id = ?;';
+        await executeQuery(deleteCategoryQuery, [categoryId]);
 
         return { success: true };
     } catch (error) {

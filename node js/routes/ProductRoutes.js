@@ -65,6 +65,29 @@ router.get('/product/find-by-name/:partialProductName/:productPerPage/:pageNumbe
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+
+// Route to get a product by ID
+router.get('/product/:productId', async (req, res) => {
+    try {
+        const productId = req.params.productId;
+
+        // Call the findProductById function to get the product by ID
+        const product = await productController.findProductById(productId);
+
+        if (product) {
+            // If the product is found, send it in the response
+            res.status(200).json({ success: true, product });
+        } else {
+            // If the product is not found, return a 404 status
+            res.status(404).json({ success: false, message: 'Product not found' });
+        }
+    } catch (error) {
+        console.error('Error getting product by ID:', error.message);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
 // Route to find products by category with pagination (No authentication required)
 router.get('/product/find-by-category/:categoryName/:productPerPage/:pageNumber', async (req, res) => {
     try {

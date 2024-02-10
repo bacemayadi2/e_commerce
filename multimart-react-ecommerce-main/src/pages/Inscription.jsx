@@ -40,7 +40,7 @@ const Inscription = () => {
                 } else {
                     // Handle the success case, e.g., redirect to login page
                     console.log("Utilisateur enregistré avec succès :", data);
-                    window.location.href = '/';
+                    window.location.href = '/login';
 
                 }
             })

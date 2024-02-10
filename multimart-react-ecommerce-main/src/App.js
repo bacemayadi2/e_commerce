@@ -13,6 +13,10 @@ const Login = lazy(() => import("./pages/Login"));
 const Inscription = lazy(() => import("./pages/Inscription"));
 const ForgetPassword = lazy(() => import("./pages/ForgetPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const PurchasesManagement = lazy(() => import("./pages/PurchasesManagement"));
+const UsersManagement = lazy(() => import("./pages/UsersManagement"));
+const ProductsManagement = lazy(() => import("./pages/ProductsManagement"));
+const AddProduct = lazy(() => import("./pages/AddProduct"));
 
 function App() {
   const [triggerTotalDistinctProducts, setTriggerTotalDistinctProducts] = useState(0);
@@ -44,6 +48,11 @@ function App() {
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
           <Route path="/resetpassword" element={<ResetPassword />} />
+          <Route path="/users" element={<UsersManagement />} />
+          <Route path="/purchases" element={<PurchasesManagement />} />
+          <Route path="/products" element={<ProductsManagement />} />
+          <Route path="/AddProduct" element={<AddProduct />} />
+          <Route path="/AddProduct/:id" element={<AddProduct />} />
 
         </Routes>
         <Footer />

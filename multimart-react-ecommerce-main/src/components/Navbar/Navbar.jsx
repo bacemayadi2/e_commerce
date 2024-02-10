@@ -8,10 +8,31 @@ import { BsBoxArrowRight } from "react-icons/bs";
 const NavBar = ({ trigger }) => {
   const [totalDistinctProducts, setTotalDistinctProducts] = useState(0);
   const username = localStorage.getItem('username');
-  useEffect(() => {
-    if (trigger) {
-      fetchTotalDistinctProducts();
+  const [isAdmin, setIsAdmin] = useState(false); // New state to track admin status
+
+  const checkAdminStatus = async () => {
+    try {
+      const response = await fetch("http://172.10.0.1:3002/api/check-admin", {
+        headers: {
+          Authorization: localStorage.getItem('token'),
+        },
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        setIsAdmin(true);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error.message);
     }
+  };
+  useEffect(() => {
+    checkAdminStatus();
+
+    if (trigger) {
+      fetchTotalProducts();
+    }
+
   }, [trigger]);
   const handleLogout = () => {
     // Perform logout logic (clear local storage, redirect, etc.)
@@ -22,17 +43,18 @@ const NavBar = ({ trigger }) => {
 
   const [expand, setExpand] = useState(false);
   const [isFixed, setIsFixed] = useState(false);
-  const fetchTotalDistinctProducts = async () => {
+  const fetchTotalProducts = async () => {
     try {
-      const response = await fetch("http://172.10.0.1:3002/api/cart/total-distinct-products", {
+      const response = await fetch("http://172.10.0.1:3002/api/cart/total-products", {
         headers: {
           Authorization: `${localStorage.getItem('token')}`,
         },
       });
       const result = await response.json();
 
-      if (result.totalDistinctProducts !== undefined) {
-        setTotalDistinctProducts(result.totalDistinctProducts);
+      if (result.totalProducts != undefined) {
+        console.log(result.totalProducts);
+        setTotalDistinctProducts(result.totalProducts);
       }
     } catch (error) {
       console.error('Error fetching total distinct products:', error.message);
@@ -42,7 +64,7 @@ const NavBar = ({ trigger }) => {
   useEffect(() => {
 
 
-    fetchTotalDistinctProducts();
+    fetchTotalProducts();
   }, []);
 
   // fixed Header
@@ -73,7 +95,7 @@ const NavBar = ({ trigger }) => {
               <div className="d-flex">
                 {username ? (
                     <div className="user-info">
-                      <span>Bonjour, {username}</span>
+                      <span>Bonjour, {isAdmin ? <span className="blue-text">Admin</span> : ''} {username}</span>
                       <button onClick={handleLogout} className="logout-button">
                         <BsBoxArrowRight className="logout-icon red-icon" />
                       </button>
@@ -129,10 +151,55 @@ const NavBar = ({ trigger }) => {
           </div>
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="justify-content-end flex-grow-1 pe-3">
+              {isAdmin && (
+                  <>
+                    <Nav.Item>
+                      <Link
+                          aria-label="Gestion utlisateur"
+                          className="navbar-link"
+                          to="/users"
+                          onClick={() => setExpand(false)}
+                      >
+                        <span className="nav-link-label "style={{ color: 'blue' }}>Gestion utlisateur</span>
+                      </Link>
+                    </Nav.Item>
+
+                    <Nav.Item>
+                      <Link
+                          aria-label="gestion achat"
+                          className="navbar-link"
+                          to="/purchases"
+                          onClick={() => setExpand(false)}
+                      >
+                        <span className="nav-link-label" style={{ color: 'blue' }}>gestion achat</span>
+                      </Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                      <Link
+                          aria-label="gestion products"
+                          className="navbar-link"
+                          to="/products"
+                          onClick={() => setExpand(false)}
+                      >
+                        <span className="nav-link-label" style={{ color: 'blue' }}>gestion produit</span>
+                      </Link>
+                    </Nav.Item>
+                  </>
+              )}
+              <Nav.Item>
+                <Link
+                    aria-label="Go to Shop Page"
+                    className="navbar-link"
+                    to="/"
+                    onClick={() => setExpand(false)}
+                >
+                  <span className="nav-link-label">Shop</span>
+                </Link>
+              </Nav.Item>
               <Nav.Item className="expanded-cart">
                 {username ? (
                     <div className="user-info">
-                      <span>Bonjour, {username}</span>
+                      <span>Bonjour, {isAdmin ? <span className="blue-text">Admin</span> : ''} {username}</span>
                       <button onClick={handleLogout} className="logout-button">
                         <BsBoxArrowRight className="logout-icon red-icon" />
                       </button>
@@ -157,16 +224,7 @@ const NavBar = ({ trigger }) => {
                       </svg>
                     </Link>
                 )}
-                <Nav.Item>
-                  <Link
-                      aria-label="Go to Shop Page"
-                      className="navbar-link"
-                      to="/"
-                      onClick={() => setExpand(false)}
-                  >
-                    <span className="nav-link-label">Shop</span>
-                  </Link>
-                </Nav.Item>
+
                 <Link
                     aria-label="Go to Cart Page"
                     to="/cart"
