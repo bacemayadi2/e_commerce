@@ -30,7 +30,6 @@ const ProductCard = ({ title, productItem ,fetchTotalDistinctProducts}) => {
                 // If API call is successful, dispatch addToCart action and show success toast
                 dispatch(addToCart({ product: productItem, num: 1 }));
                 toast.success("Product has been added to cart!");
-                fetchTotalDistinctProducts();
 
             } else {
                 // If API call fails, show error toast
