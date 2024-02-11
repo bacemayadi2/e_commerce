@@ -271,7 +271,6 @@ async function authenticateUser(usernameOrEmail, password) {
 async function promoteUserToAdmin( userIdToPromote) {
     try {
 
-        console.log(userIdToPromote);
         // Mettre à jour le rôle de l'utilisateur à 'Admin'
         const promoteUserQuery = `
             UPDATE user SET role = 'Admin' WHERE id = ?;
@@ -289,7 +288,6 @@ async function promoteUserToAdmin( userIdToPromote) {
 async function unpromoteUserToAdmin( userIdToPromote) {
     try {
 
-        console.log(userIdToPromote);
         // Mettre à jour le rôle de l'utilisateur à 'Admin'
         const promoteUserQuery = `
             UPDATE user SET role = 'Client' WHERE id = ?;

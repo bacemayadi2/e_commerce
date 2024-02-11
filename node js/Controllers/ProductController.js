@@ -33,12 +33,8 @@ async function getProductsPaginated(limit, page) {
     try {
         // Calculate the offset based on the page number and limit
         const offset = (page - 1) * limit;
-        console.log("hhh")
-        console.log(limit);
-        console.log(offset);
         const selectQuery = `SELECT * FROM product LIMIT ${limit} OFFSET ${offset};`;
         const products = await executeQuery(selectQuery);
-        console.log(products);
 
 
         return products;
@@ -81,7 +77,6 @@ async function modifyProduct(productId, name, price, image,description, category
 
         // Update the product information in the database
         const updateQuery = 'UPDATE product SET name = ?, price = ?, image = ? ,description = ? WHERE id = ?';
-        console.log(name);
 
         await executeQuery(updateQuery, [name, price, image,description, productId]);
         // Associate the product with categories
@@ -181,7 +176,6 @@ async function findProductById(productId) {
         `;
 
         const [product] = await executeQuery(selectQuery, [productId]);
-        console.log(await executeQuery(selectQuery, [productId]));
 
         return product;
     } catch (error) {

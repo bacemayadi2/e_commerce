@@ -9,13 +9,10 @@ router.get('/cart/user', verifyToken, async (req, res) => {
     try {
         // Extract user ID from the authenticated user
         const userId = req.user.id;
-        console.log("b1")
         // Call the controller function to get the user's cart
         const cartId = (await cartController.getUserCartID(userId)).cartId;
-        console.log("b2")
 
         const result = await cartController.getCartDetail(cartId);
-        console.log("b3")
 
         // Respond with the result
         res.json(result);
@@ -73,9 +70,7 @@ router.get('/cart/total-products', verifyToken, async (req, res) => {
         const userId = req.user.id;
         // Call the controller function to get the cart ID for the user
         const cartId = (await cartController.getUserCartID(userId)).cartId;
-        console.log(cartId)
 
-        console.log(await cartController.getTotalProductsInCart(cartId));
         // Call the controller function to calculate the total number of distinct products in the cart
          const totalProducts = await cartController.getTotalProductsInCart(cartId);
 

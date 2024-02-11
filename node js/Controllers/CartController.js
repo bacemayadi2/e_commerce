@@ -73,7 +73,6 @@ async function getCartDetail(CartID,userId) {
             }
         } else {
             // If userId is not valid, return a default value or handle it accordingly
-            console.log('Invalid userId:', userId);
             return {success: false, error: 'Invalid userId'};
         }
     } catch (error) {
@@ -86,7 +85,6 @@ async function getCartDetail(CartID,userId) {
 // Function to create a new cart for the connected user
 async function createNewCartForUser(userId) {
     try {
-        console.log("hereeee "+userId);
         const createCartQuery = 'INSERT INTO cart (user_id, created_at, edited_at) VALUES (?, NOW(), ?);';
 
         // Set editedAt to null if it can be NULL, otherwise, set the current time
@@ -274,7 +272,6 @@ async function getTotalProductsInCart(cartId) {
 
         // Extract the total number of distinct products from the query result
         const totalDistinctProducts = result.totalQuantity || 0;
-        console.log(totalDistinctProducts);
         return totalDistinctProducts;
     } catch (error) {
         return 0;
@@ -295,6 +292,7 @@ async function calculateTotalPriceWithDiscount(cartId) {
 
         const [{ total }] = await executeQuery(totalQuery, [cartId]);
         // Apply a 25% discount if the total price is higher than 100
+
         const discountedPrice = total > 100 ? (total * 0.75).toFixed(3) : total.toFixed(3);
 
         return {discountedPrice: discountedPrice,  priceWithoutDiscount : total };

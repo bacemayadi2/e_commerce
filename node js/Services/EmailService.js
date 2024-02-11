@@ -25,7 +25,6 @@ class EmailServerConnection {
                 text: content,
             });
 
-            console.log(`Email sent to ${to} with subject: ${subject}\nContent:\n${content}`);
         } catch (error) {
             console.error('Error sending email:', error.message);
             throw error;
