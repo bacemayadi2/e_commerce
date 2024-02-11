@@ -65,6 +65,8 @@ const Cart = ({triggerTotalDistinctProducts}) => {
         setPriceWithoutDiscount(result.priceWithoutDiscount);
         triggerTotalDistinctProducts();
 
+        fetchAndDisplayImages();
+
       } else {
         // Handle error
         console.error("Error fetching cart details:", result.message);
@@ -112,7 +114,6 @@ const Cart = ({triggerTotalDistinctProducts}) => {
       if (product.quantity==1)  //product should be deleted instade of product quantity adjusted
         {
           handleDeleteProduct(product);
-          fetchCartDetails();
           return; // Stop executing the rest of the function
 
         }

@@ -9,6 +9,7 @@ router.get('/cart/user', verifyToken, async (req, res) => {
     try {
         // Extract user ID from the authenticated user
         const userId = req.user.id;
+        console.log("b1")
         // Call the controller function to get the user's cart
         const cartId = (await cartController.getUserCartID(userId)).cartId;
 
