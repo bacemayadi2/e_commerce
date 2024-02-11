@@ -1,5 +1,4 @@
 const mysql = require('mysql2/promise');
-const fs = require('fs'); // Make sure to include the 'fs' module
 
 const dbConfig = {
     host: 'sql.freedb.tech',
@@ -7,7 +6,6 @@ const dbConfig = {
     password: 'gPSD@v8?942jwE3',
     database: 'freedb_e_commerce_demo_bacem',
 };
-
 async function executeQuery(query, values) {
     try {
         const connection = await mysql.createConnection(dbConfig);

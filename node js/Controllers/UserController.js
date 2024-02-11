@@ -307,20 +307,16 @@ async function unpromoteUserToAdmin( userIdToPromote) {
 // Fonction pour récupérer tous les utilisateurs avec pagination (accessible uniquement par un administrateur)
 async function findAllUser( itemsPerPage, currentPage) {
     try {
-
         const offset = (currentPage - 1) * itemsPerPage;
-        const query = `
-            SELECT * FROM user
-            LIMIT ? OFFSET ?;
-        `;
+        const query = `SELECT * FROM user LIMIT ${itemsPerPage} OFFSET ${offset};`;
 
-        const users = await executeQuery(query, [itemsPerPage, offset]);
+
+        const users = await executeQuery(query);
 
         // Récupérer le nombre total d'utilisateurs
         const countQuery = 'SELECT COUNT(*) AS total FROM user;';
         const totalUsers = await executeQuery(countQuery);
         const total = totalUsers[0].total;
-
         return { success: true, users, total, currentPage, itemsPerPage };
     } catch (error) {
         console.error('Erreur lors de la récupération de tous les utilisateurs avec pagination :', error.message);

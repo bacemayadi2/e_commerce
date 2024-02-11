@@ -133,9 +133,9 @@ async function findProductsByNameWithPagination(partialProductName, productPerPa
         const offset = (pageNumber - 1) * productPerPage;
 
         // Search for products with names containing the provided partialProductName and include pagination
-        const selectQuery = 'SELECT * FROM product WHERE name LIKE ? LIMIT ? OFFSET ?;';
+        const selectQuery = `SELECT * FROM product WHERE name LIKE ? LIMIT ${productPerPage} OFFSET ${offset};`;
         const partialNamePattern = `%${partialProductName}%`;
-        const products = await executeQuery(selectQuery, [partialNamePattern, productPerPage, offset]);
+        const products = await executeQuery(selectQuery, [partialNamePattern]);
 
         return products ;
     } catch (error) {
@@ -156,11 +156,11 @@ async function findProductsByCategory(categoryName, productPerPage, pageNumber) 
             JOIN product_category pc ON p.id = pc.product_id
             JOIN category c ON pc.category_id = c.id
             WHERE c.name = ?
-            LIMIT ?
-            OFFSET ?;
+            LIMIT ${productPerPage}
+            OFFSET ${offset};
         `;
 
-        const products = await executeQuery(selectQuery, [categoryName, productPerPage, offset]);
+        const products = await executeQuery(selectQuery, [categoryName]);
 
         return  products ;
     } catch (error) {
@@ -202,11 +202,11 @@ async function findProductsByNameWithPaginationAndCategory(partialProductName, p
             JOIN product_category pc ON p.id = pc.product_id
             JOIN category c ON pc.category_id = c.id
             WHERE p.name LIKE ? AND c.name = ?
-            LIMIT ? OFFSET ?;
+            LIMIT ${productPerPage} OFFSET ${offset};
         `;
 
         const partialNamePattern = `%${partialProductName}%`;
-        const products = await executeQuery(selectQuery, [partialNamePattern, categoryName, productPerPage, offset]);
+        const products = await executeQuery(selectQuery, [partialNamePattern, categoryName]);
 
         return  products ;
     } catch (error) {
