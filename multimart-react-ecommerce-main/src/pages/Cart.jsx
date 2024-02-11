@@ -154,8 +154,9 @@ const Cart = ({triggerTotalDistinctProducts}) => {
 
       if (result.success) {
         dispatch(deleteProduct(product));
-        if (cartDetails.length==1)
-        window.location.href = '/';
+        if (cartDetails.length==1) {
+          window.location.href = '/';
+        }
         fetchCartDetails();
       } else {
         console.error("Error removing product from cart:", result.message);
