@@ -332,11 +332,11 @@ async function findUserByUsername( partialUsername, itemsPerPage, currentPage) {
         const query = `
             SELECT * FROM user
             WHERE username LIKE ?
-            LIMIT ? OFFSET ?;
+            LIMIT ${itemsPerPage} OFFSET ${offset};
         `;
 
         const partialUsernamePattern = `%${partialUsername}%`;
-        const users = await executeQuery(query, [partialUsernamePattern, itemsPerPage, offset]);
+        const users = await executeQuery(query, [partialUsernamePattern]);
 
         // Récupérer le nombre total d'utilisateurs avec le nom d'utilisateur partiel
         const countQuery = 'SELECT COUNT(*) AS total FROM user WHERE username LIKE ?;';
@@ -360,11 +360,11 @@ async function findUserByEmail( partialEmail, itemsPerPage, currentPage) {
         const query = `
             SELECT * FROM user
             WHERE email LIKE ?
-            LIMIT ? OFFSET ?;
+            LIMIT ${itemsPerPage} OFFSET ${offset} ;
         `;
 
         const partialEmailPattern = `%${partialEmail}%`;
-        const users = await executeQuery(query, [partialEmailPattern, itemsPerPage, offset]);
+        const users = await executeQuery(query, [partialEmailPattern]);
 
         // Récupérer le nombre total d'utilisateurs avec l'adresse e-mail partielle
         const countQuery = 'SELECT COUNT(*) AS total FROM user WHERE email LIKE ?;';
