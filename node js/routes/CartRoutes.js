@@ -9,10 +9,13 @@ router.get('/cart/user', verifyToken, async (req, res) => {
     try {
         // Extract user ID from the authenticated user
         const userId = req.user.id;
-
+        console.log("b1")
         // Call the controller function to get the user's cart
         const cartId = (await cartController.getUserCartID(userId)).cartId;
+        console.log("b2")
+
         const result = await cartController.getCartDetail(cartId);
+        console.log("b3")
 
         // Respond with the result
         res.json(result);
@@ -74,7 +77,7 @@ router.get('/cart/total-products', verifyToken, async (req, res) => {
 
         console.log(await cartController.getTotalProductsInCart(cartId));
         // Call the controller function to calculate the total number of distinct products in the cart
-        const totalProducts = await cartController.getTotalProductsInCart(cartId);
+         const totalProducts = await cartController.getTotalProductsInCart(cartId);
 
         // Respond with the total number of distinct products
         res.json({ totalProducts });
@@ -117,7 +120,7 @@ router.delete('/cart/delete/:cartId', verifyToken, verifyAdminRole, async (req, 
 router.put('/cart/pay', verifyToken, async (req, res) => {
     try {
         const { cartId } = req.params;
-        const userId = req.user.id; // Get the user ID from the authenticated user
+        const userId =  req.user.id; // Get the user ID from the authenticated user
         const resCartId = await cartController.getUserCartID(userId);
 
 
@@ -133,10 +136,10 @@ router.put('/cart/pay', verifyToken, async (req, res) => {
 router.put('/cart/increase-product-quantity/:productId', verifyToken, async (req, res) => {
     try {
         // Extract user ID from the authenticated user
+
         const userId = req.user.id;
         const cartId = (await cartController.getUserCartID(userId)).cartId;
         const { productId } = req.params;
-
         // Call the controller function to increase product quantity in the user's cart
         const result = await cartController.increaseProductQuantityInCart(productId, cartId);
 

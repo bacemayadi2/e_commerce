@@ -38,52 +38,61 @@ async function getCartDetail(CartID,userId) {
                 priceWithoutDiscount: Price.priceWithoutDiscount
             };
         }
-        createNewCartForUser(userId);
-        getCartDetail(userId); // fill
+       // getCartDetail(userId); // fill
 
     } catch (error) {
-        console.error('Error getting user cart:', error.message);
+        console.error('Error getting user cart2:', error.message);
         throw error;
     }
 }
 
-// Function to get the user's cart (latest created, not associated with any purchase)
-async function getUserCartID(userId) {
+ async function getUserCartID(userId) {
     try {
-        // Get the latest cart for the user
-        const latestCartQuery = `
-            SELECT id, payed
-            FROM cart
-            WHERE user_id = ?
-            ORDER BY created_at DESC
-            LIMIT 1;
-        `;
+        if (userId > 0) {
+            const latestCartQuery = `
+                SELECT id, payed
+                FROM cart
+                WHERE user_id = ?
+                ORDER BY created_at DESC LIMIT 1;
+            `;
 
-        const [latestCart] = await executeQuery(latestCartQuery, [userId]);
+            try {
+                const [latestCart] = await executeQuery(latestCartQuery, [userId]);
 
-        if (latestCart) {
-            // If there is a latest cart, check if it's not associated with any purchase
-            if (latestCart.payed === null) {
-                // If the cart is not associated with a purchase, return it
-                return { success: true, cartId: latestCart.id };
+                if (latestCart && latestCart.payed === null) {
+                    // If the cart is not associated with a purchase, return its id
+                    return {success: true, cartId: latestCart.id};
+                }
+
+                // If the last cart is paid or no cart is found, create a new cart for the user
+                return await createNewCartForUser(userId);
+            } catch (error) {
+                console.error('Database error:', error.message);
+                // Handle the error appropriately
+                return {success: false, error: 'Database error'};
             }
+        } else {
+            // If userId is not valid, return a default value or handle it accordingly
+            console.log('Invalid userId:', userId);
+            return {success: false, error: 'Invalid userId'};
         }
-
-        // If there is no existing cart or the latest cart is associated with a purchase, create a new one
-        return await createNewCartForUser(userId);
     } catch (error) {
         console.error('Error getting user cart:', error.message);
         throw error;
     }
 }
-
 
 
 // Function to create a new cart for the connected user
 async function createNewCartForUser(userId) {
     try {
-        const createCartQuery = 'INSERT INTO cart (user_id, created_at, edited_at) VALUES (?, NOW(), NOW());';
-        const result = await executeQuery(createCartQuery, [userId]);
+        console.log("hereeee "+userId);
+        const createCartQuery = 'INSERT INTO cart (user_id, created_at, edited_at) VALUES (?, NOW(), ?);';
+
+        // Set editedAt to null if it can be NULL, otherwise, set the current time
+        const editedAt = null; // or new Date() if you want to set a specific time
+
+        const result = await executeQuery(createCartQuery, [userId, editedAt]);
 
         return { success: true, cartId: result.insertId };
     } catch (error) {
@@ -91,6 +100,7 @@ async function createNewCartForUser(userId) {
         throw error;
     }
 }
+
 
 // Function to affect a product to the cart with a specific quantity
 async function affectProductToCart(productId, cartId, quantity) {
@@ -142,7 +152,7 @@ async function increaseProductQuantityInCart(productId, cartId) {
 
         return { success: true };
     } catch (error) {
-        console.error('Error increasing product quantity in cart:', error.message);
+        console.error('Error increasing product quantity in cart:   here', error.message);
         throw error;
     }
 }
@@ -267,8 +277,9 @@ async function getTotalProductsInCart(cartId) {
         console.log(totalDistinctProducts);
         return totalDistinctProducts;
     } catch (error) {
-        console.error('Error calculating total number of distinct products in the cart:', error.message);
-        throw error;
+        return 0;
+
+
     }
 }
 // Function to calculate total price with discount
