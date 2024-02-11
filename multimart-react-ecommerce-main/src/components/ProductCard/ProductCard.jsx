@@ -29,7 +29,7 @@ const ProductCard = ({ title, productItem, triggerTotalDistinctProducts }) => {
                 // Create a Blob URL for the image
                 const objectURL = URL.createObjectURL(blob);
                 // Set the Blob URL as the src for the image element
-                document.getElementById("yourImageId").src = objectURL;
+                document.getElementById(`yourImageId_${productItem.id}`).src = objectURL;
             })
             .catch((error) => {
                 console.error("Error fetching image:", error);
@@ -86,7 +86,7 @@ const ProductCard = ({ title, productItem, triggerTotalDistinctProducts }) => {
             {title === "Big Discount" ? (
                 <span className="discount">{productItem.discount}% Off</span>
             ) : null}
-            <img id="yourImageId" alt="Your Image" />
+            <img id={`yourImageId_${productItem.id}`} alt="Your Image" />
 
 
             <div className="product-like">
@@ -94,7 +94,6 @@ const ProductCard = ({ title, productItem, triggerTotalDistinctProducts }) => {
             </div>
 
             <div className="product-details">
-                <h3 onClick={() => handelClick()}>{productItem.name}</h3>
                 <div className="price">
                     <h4>${productItem.price}</h4>
                     <button
