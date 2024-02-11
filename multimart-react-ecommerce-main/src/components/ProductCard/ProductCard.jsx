@@ -60,7 +60,6 @@ const ProductCard = ({ title, productItem, triggerTotalDistinctProducts }) => {
                 <span className="discount">{productItem.discount}% Off</span>
             ) : null}
             <img
-                onClick={() => handelClick()}
                 src="phone-01.jpg" // Use the Blob URL as src
                 alt=""
             />
