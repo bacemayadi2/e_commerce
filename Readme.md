@@ -27,6 +27,8 @@ Password: admin
 for user access create new user by the interface  
 if you forget password of you can reset it if you entered a valid email when creating account
 
+in this demo image is static due to limit of size of database 
+
 run tests
  cd '.\node js\'
  npm start
