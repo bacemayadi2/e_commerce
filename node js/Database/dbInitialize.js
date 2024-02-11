@@ -107,6 +107,21 @@ async function initializeDatabase() {
             // Fermer la connexion
             connection.end();
         } else {
+            const connection = await mysql.createConnection({
+                host: dbConfig.host,
+                user: dbConfig.user,
+                password: dbConfig.password,
+            });
+            // Utiliser la base de données nouvellement créée
+            await connection.query(`USE ${dbConfig.database}`);
+
+            // Séparer la requête de création des tables en requêtes individuelles
+            const individualQueries = createTablesQuery.split(';').filter(query => query.trim() !== '');
+
+            // Exécuter chaque requête individuelle pour créer les tables
+            for (const query of individualQueries) {
+                await connection.query(query);
+            }
             console.log(`La base de données '${dbConfig.database}' existe déjà. Création ignorée.`);
         }
     } catch (error) {

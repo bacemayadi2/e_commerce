@@ -16,6 +16,10 @@ front-end
  cd .\multimart-react-ecommerce-main\
  npm start
 
+run tests
+cd '.\node js\'
+npm start
+
 
 this demo configured to use hosted data base 
 please use user admin    credentials as    to connecte as to website for admin privelege 
@@ -29,8 +33,10 @@ if you forget password of you can reset it if you entered a valid email when cre
 
 in this demo image is static due to limit of size of database 
 
-run tests
- cd '.\node js\'
- npm start
+website is slow because database and backend are not stored on same server 
+also database hosting is free 
+
+
+
 
  
