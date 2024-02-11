@@ -105,7 +105,6 @@ const NavBar = ({ trigger }) => {
                         aria-label="Go to login Page"
                         to="/login"
                         className="login"
-                        data-num={totalDistinctProducts}
                     >
                       <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -127,6 +126,8 @@ const NavBar = ({ trigger }) => {
                   aria-label="Go to Cart Page"
                   to="/cart"
                   className="cart"
+                  data-num={totalDistinctProducts}
+
               >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -209,6 +210,7 @@ const NavBar = ({ trigger }) => {
                         aria-label="Go to login Page"
                         to="/login"
                         className="login"
+
                     >
                       <svg
                           xmlns="http://www.w3.org/2000/svg"

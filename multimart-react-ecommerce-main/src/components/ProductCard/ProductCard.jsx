@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../app/features/cart/cartSlice";
+import { useEffect, useState } from "react";
 
-const ProductCard = ({ title, productItem ,triggerTotalDistinctProducts}) => {
+const ProductCard = ({ title, productItem, triggerTotalDistinctProducts }) => {
     const dispatch = useDispatch();
     const router = useNavigate();
 
@@ -16,13 +17,16 @@ const ProductCard = ({ title, productItem ,triggerTotalDistinctProducts}) => {
     const handelAdd = async (productId) => {
         try {
             // Call the API to increase product quantity
-            const response = await fetch(`http://172.10.0.1:3002/api/cart/increase-product-quantity/${productId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': localStorage.getItem('token'),
-                },
-            });
+            const response = await fetch(
+                `http://172.10.0.1:3002/api/cart/increase-product-quantity/${productId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: localStorage.getItem("token"),
+                    },
+                }
+            );
 
             const result = await response.json();
 
@@ -31,17 +35,24 @@ const ProductCard = ({ title, productItem ,triggerTotalDistinctProducts}) => {
                 dispatch(addToCart({ product: productItem, num: 1 }));
                 toast.success("Product has been added to cart!");
                 triggerTotalDistinctProducts();
-
-
             } else {
                 // If API call fails, show error toast
-                toast.error("Failed to add product to cart. Please try again.");
+                toast.error(
+                    "Failed to add product to cart. Please try again."
+                );
             }
         } catch (error) {
-            console.error('Error adding product to cart:', error.message);
-            toast.error("Failed to add product to cart. Please try again.");
+            console.error("Error adding product to cart:", error.message);
+            toast.error(
+                "Failed to add product to cart. Please try again."
+            );
         }
     };
+
+    // Assuming productItem.image.data is a Buffer
+    const uint8Array = new Uint8Array(productItem.image.data);
+    const blob = new Blob([uint8Array]); // Adjust the type as per your image format
+    const blobUrl = URL.createObjectURL(blob);
 
     return (
         <Col md={3} sm={5} xs={10} className="product mtop">
@@ -49,11 +60,11 @@ const ProductCard = ({ title, productItem ,triggerTotalDistinctProducts}) => {
                 <span className="discount">{productItem.discount}% Off</span>
             ) : null}
             <img
-                loading="lazy"
                 onClick={() => handelClick()}
-                src={productItem.imgUrl}
+                src="phone-01.jpg" // Use the Blob URL as src
                 alt=""
             />
+
             <div className="product-like">
                 <ion-icon name="heart-outline"></ion-icon>
             </div>

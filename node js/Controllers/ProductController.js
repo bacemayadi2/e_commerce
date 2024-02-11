@@ -33,10 +33,13 @@ async function getProductsPaginated(limit, page) {
     try {
         // Calculate the offset based on the page number and limit
         const offset = (page - 1) * limit;
+        console.log("hhh")
+        console.log(limit);
+        console.log(offset);
+        const selectQuery = `SELECT * FROM product LIMIT ${limit} OFFSET ${offset};`;
+        const products = await executeQuery(selectQuery);
+        console.log(products);
 
-        // Retrieve paginated products from the database
-        const selectQuery = 'SELECT * FROM product LIMIT ? OFFSET ?;';
-        const products = await executeQuery(selectQuery, [limit, offset]);
 
         return products;
     } catch (error) {

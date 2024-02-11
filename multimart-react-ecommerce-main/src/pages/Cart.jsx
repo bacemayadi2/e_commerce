@@ -123,6 +123,28 @@ const Cart = ({triggerTotalDistinctProducts}) => {
       console.error("Error removing product from cart:", error.message);
     }
   };
+  const handlePay = async () => {
+    try {
+      const response = await fetch("http://172.10.0.1:3002/api/cart/pay", {
+        method: "put",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        // Optionally, you can handle any success actions
+        console.log("Payment successful");
+        window.location.href = '/';
+      } else {
+        console.error("Error processing payment:", result.message);
+      }
+    } catch (error) {
+      console.error("Error processing payment:", error.message);
+    }
+  };
 
   return (
       <section className="cart-items">
@@ -200,6 +222,9 @@ const Cart = ({triggerTotalDistinctProducts}) => {
                         <span>{priceWithoutDiscount.toFixed(3)} dinar</span>
                     )}
                   </h3>
+                  <button className="confirm-purchase" onClick={handlePay}>
+                    Confirm Purchase
+                  </button>
                 </div>
               </div>
             </Col>

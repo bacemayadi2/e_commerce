@@ -58,8 +58,16 @@ router.get('/product/find-by-name/:partialProductName/:productPerPage/:pageNumbe
     router.get('/product/find-all/:productPerPage/:pageNumber', async (req, res) => {
     try {
         const { productPerPage = 10, pageNumber = 1 } = req.params; // Default productPerPage to 10 products per page and pageNumber 1
+        console.log(productPerPage);
+        console.log(pageNumber);
+
         const result = await productController.getProductsPaginated(parseInt(productPerPage), parseInt(pageNumber));
+        console.log(result);
+
         res.json(result);
+
+
+
     } catch (error) {
         console.error('Error finding products with pagination:', error.message);
         res.status(500).json({ error: 'Internal server error' });

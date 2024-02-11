@@ -1,10 +1,11 @@
 const mysql = require('mysql2/promise');
+const fs = require('fs'); // Make sure to include the 'fs' module
 
 const dbConfig = {
-    host: '127.0.0.1',
-    user: 'root',
-    password: '',
-    database: 'e_commerce_demo_bacem',
+    host: 'sql.freedb.tech',
+    user: 'freedb_rootB',
+    password: 'gPSD@v8?942jwE3',
+    database: 'freedb_e_commerce_demo_bacem',
 };
 
 async function executeQuery(query, values) {

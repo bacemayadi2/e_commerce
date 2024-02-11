@@ -23,7 +23,7 @@ const AddProduct = () => {
     const [name, setName] = useState("");
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
-    const [image, setImage] = useState(null);
+    const [image, setImage] = useState(11);
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [categories, setCategories] = useState([]);
     const [editMode, setEditMode] = useState(false);
@@ -87,7 +87,7 @@ const AddProduct = () => {
         const reader = new FileReader();
 
         reader.onloadend = () => {
-            setImage(reader.result);
+           // setImage(reader.result);
         };
 
         if (selectedImage) {
@@ -239,10 +239,6 @@ const AddProduct = () => {
                         onChange={(e) => setDescription(e.target.value)}
                         required
                     />
-                </Form.Group>
-                <Form.Group controlId="productImage">
-                    <Form.Label>Image</Form.Label>
-                    <Form.Control type="file" onChange={handleImageChange} />
                 </Form.Group>
                 <Form.Group controlId="productCategories">
                     <Form.Label>Categories</Form.Label>
