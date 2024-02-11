@@ -94,8 +94,11 @@ const ProductCard = ({ title, productItem, triggerTotalDistinctProducts }) => {
             </div>
 
             <div className="product-details">
+                <h3 >{productItem.name}</h3>
+
                 <div className="price">
                     <h4>${productItem.price}</h4>
+
                     <button
                         aria-label="Add"
                         type="submit"
