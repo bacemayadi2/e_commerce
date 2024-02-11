@@ -6,6 +6,12 @@ const dbConfig = {
     password: 'gPSD@v8?942jwE3',
     database: 'freedb_e_commerce_demo_bacem',
 };
+// const dbConfig = {
+//     host: '127.0.0.1',
+//     user: 'root',
+//     password: '',
+//     database: 'e_commerce_demo_bacem',
+// };
 async function executeQuery(query, values) {
     try {
         const connection = await mysql.createConnection(dbConfig);

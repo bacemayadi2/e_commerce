@@ -8,6 +8,7 @@ const categoryRoutes = require('./routes/CategoryRoutes');
 const productRoutes = require('./routes/ProductRoutes');
 const cartRoutes = require('./routes/CartRoutes');
 const cors = require('cors');
+const multer = require('multer');
 
 
 const config = require('./Configs/config');

@@ -28,7 +28,7 @@ const createTablesQuery = `
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     price VARCHAR(255) NOT NULL,
-    image MEDIUMBLOB NOT NULL,
+    image VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL
   );
 

@@ -13,8 +13,43 @@ const Cart = ({triggerTotalDistinctProducts}) => {
   const dispatch = useDispatch();
   const [cartDetails, setCartDetails] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const [discountedPrice, setDiscountedPrice] = useState(0);
   const [priceWithoutDiscount, setPriceWithoutDiscount] = useState(0);
+  const imageUrl = null;
+  const fetchAndDisplayImages = async () => {
+    // Iterate through cartDetails and fetch images
+    for (const item of cartDetails) {
+      try {
+        const imageUrl = `http://localhost:3010/api/images/${item.image}`;
+
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const objectURL = URL.createObjectURL(blob);
+
+        // Set the Blob URL as the src for the image element
+        document.getElementById(`yourImageId_${item.productId}`).src = objectURL;
+      } catch (error) {
+        console.error(`Error fetching image for item ${item.productId}:`, error);
+      }
+    }
+
+    // Set imagesLoaded to true after images are loaded
+    setImagesLoaded(true);
+  };
+  useEffect(() => {
+    // Fetch cart details when the component mounts
+    fetchCartDetails();
+  }, []);
+  useEffect(() => {
+    if (cartDetails.length > 0 && imagesLoaded) {
+      fetchAndDisplayImages();
+    }
+  }, [cartDetails, imagesLoaded]);
   const fetchCartDetails = async () => {
     try {
       const response = await fetch("http://172.10.0.1:3002/api/cart/user", {
@@ -29,6 +64,7 @@ const Cart = ({triggerTotalDistinctProducts}) => {
         setDiscountedPrice(result.discountedPrice);
         setPriceWithoutDiscount(result.priceWithoutDiscount);
         triggerTotalDistinctProducts();
+
       } else {
         // Handle error
         console.error("Error fetching cart details:", result.message);
@@ -42,6 +78,7 @@ const Cart = ({triggerTotalDistinctProducts}) => {
 
 
     fetchCartDetails();
+
   }, []);
 
   const handleincreaseQTY = async (product) => {
@@ -75,6 +112,7 @@ const Cart = ({triggerTotalDistinctProducts}) => {
       if (product.quantity==1)  //product should be deleted instade of product quantity adjusted
         {
           handleDeleteProduct(product);
+          fetchCartDetails();
           return; // Stop executing the rest of the function
 
         }
@@ -159,49 +197,50 @@ const Cart = ({triggerTotalDistinctProducts}) => {
                   <h1 className="no-items product">No Items are added in Cart</h1>
               ) : (
                   <>
-              {cartDetails.map((item) => {
-                const producttotalprice = (item.price * item.quantity).toFixed(3);
-                return (
-                    <div className="cart-list" key={item.productId}>
-                      <Row>
-                        <Col className="image-holder" sm={4} md={3}>
-                          <img src={item.image} alt="" />
-                        </Col>
-                        <Col sm={8} md={9}>
-                          <Row className="cart-content justify-content-center">
-                            <Col xs={12} sm={9} className="cart-details">
-                              <h3>{item.productName}</h3>
-                              <h4>
-                                ${item.price} * {item.quantity}
-                                <span>${producttotalprice}</span>
-                              </h4>
-                            </Col>
-                            <Col xs={12} sm={3} className="cartControl">
+                    {cartDetails.map((item) => {
+                      const producttotalprice = (item.price * item.quantity).toFixed(3);
+                      return (
+                          <div className="cart-list" key={item.productId}>
+                            <Row>
+                              <Col className="image-holder" sm={4} md={3}>
+                                {/* Updated img tag with a unique id */}
+                                <img id={`yourImageId_${item.productId}`}   alt="" />
+                              </Col>
+                              <Col sm={8} md={9}>
+                                <Row className="cart-content justify-content-center">
+                                  <Col xs={12} sm={9} className="cart-details">
+                                    <h3>{item.productName}</h3>
+                                    <h4>
+                                      ${item.price} * {item.quantity}
+                                      <span>${producttotalprice}</span>
+                                    </h4>
+                                  </Col>
+                                  <Col xs={12} sm={3} className="cartControl">
+                                    <button
+                                        className="incCart"
+                                        onClick={() => handleincreaseQTY(item)}
+                                    >
+                                      <i className="fa-solid fa-plus"></i>
+                                    </button>
+                                    <button
+                                        className="desCart"
+                                        onClick={() => handleDecreaseQty(item)}
+                                    >
+                                      <i className="fa-solid fa-minus"></i>
+                                    </button>
+                                  </Col>
+                                </Row>
+                              </Col>
                               <button
-                                  className="incCart"
-                                  onClick={() => handleincreaseQTY(item)}
+                                  className="delete"
+                                  onClick={() => handleDeleteProduct(item)}
                               >
-                                <i className="fa-solid fa-plus"></i>
+                                <ion-icon name="close"></ion-icon>
                               </button>
-                              <button
-                                  className="desCart"
-                                  onClick={() => handleDecreaseQty(item)}
-                              >
-                                <i className="fa-solid fa-minus"></i>
-                              </button>
-                            </Col>
-                          </Row>
-                        </Col>
-                        <button
-                            className="delete"
-                            onClick={() => handleDeleteProduct(item)}
-                        >
-                          <ion-icon name="close"></ion-icon>
-                        </button>
-                      </Row>
-                    </div>
-                );
-              })}
+                            </Row>
+                          </div>
+                      );
+                    })}
                   </>
                 )}
             </Col>

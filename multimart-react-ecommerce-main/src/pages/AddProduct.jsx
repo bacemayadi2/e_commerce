@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Form, Button, Modal } from "react-bootstrap";
 import { useParams } from "react-router-dom";
+import axios from 'axios';
 
 // CategorySelector component
 const CategorySelector = ({ categories, selectedCategories, onChange }) => {
@@ -19,11 +20,14 @@ const CategorySelector = ({ categories, selectedCategories, onChange }) => {
     );
 };
 
+
+
+
 const AddProduct = () => {
     const [name, setName] = useState("");
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
-    const [image, setImage] = useState(11);
+    let [image, setImage] = useState(11);
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [categories, setCategories] = useState([]);
     const [editMode, setEditMode] = useState(false);
@@ -35,6 +39,27 @@ const AddProduct = () => {
 
     const { id } = useParams();
 
+    const handleImageChange = async (event) => {
+        try {
+            const formData = new FormData();
+            formData.append("myFile", event.target.files[0]);
+
+            // Use setImage to update the image state
+            setImage(event.target.files[0]);
+
+            console.log(image);
+
+            // Assuming you are using axios for the HTTP request
+            await axios.post("http://localhost:3010/api/uploadfile", formData, {
+                headers: {
+                    "content-type": "multipart/form-data",
+                },
+            });
+
+        } catch (error) {
+            console.error('Error handling image change:', error);
+        }
+    };
     useEffect(() => {
         // Check if in edit mode
         if (id) {
@@ -81,19 +106,6 @@ const AddProduct = () => {
         }
     };
 
-    const handleImageChange = (event) => {
-        // Convert selected image to blob
-        const selectedImage = event.target.files[0];
-        const reader = new FileReader();
-
-        reader.onloadend = () => {
-           // setImage(reader.result);
-        };
-
-        if (selectedImage) {
-            reader.readAsDataURL(selectedImage);
-        }
-    };
 
     const handleCategoryChange = (selectedCategories) => {
         setSelectedCategories(selectedCategories);
@@ -176,6 +188,7 @@ const AddProduct = () => {
         event.preventDefault();
 
         const apiUrl = editMode ? `http://172.10.0.1:3002/api/product/modify/${id}` : 'http://172.10.0.1:3002/api/product/add';
+        image = (image.name);
 
         try {
             const response = await fetch(apiUrl, {
@@ -239,6 +252,10 @@ const AddProduct = () => {
                         onChange={(e) => setDescription(e.target.value)}
                         required
                     />
+                </Form.Group>
+                <Form.Group controlId="productImage">
+                    <Form.Label>Image</Form.Label>
+                    <Form.Control type="file" onChange={handleImageChange} />
                 </Form.Group>
                 <Form.Group controlId="productCategories">
                     <Form.Label>Categories</Form.Label>
